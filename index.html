@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Address Calculation Sort · Simulador · Equipo 5</title>
+<meta name="description" content="Simulador interactivo de Address Calculation Sort (ordenamiento por cálculo de direcciones). Estructuras de Datos, Equipo 5.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Bungee&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Diseño: portada tipo diapositiva (blanco, manchas azul pastel, títulos azul pizarra) y dos paneles redondeados debajo. */
+:root{
+  --bg:#EAF1F9; --surface:#FFFFFF; --ink:#23394F; --muted:#5A6E86; --line:#C9DAEC;
+  --accent:#2F6FCB; --on-accent:#FFFFFF; --title:#587491; --blob:#CADFF2; --brush:#BDD5EC;
+  --hot:#E4F0FD; --chip:#E3EDF8; --edge:#3F5A78; --danger:#B3261E; --shadow:rgba(60,100,150,.14);
+  --display:'Bungee','Arial Black',Impact,system-ui,sans-serif;
+  --sans:'Baloo 2','Trebuchet MS',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'Courier New',monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0A1627; --surface:#12243C; --ink:#E6EEF8; --muted:#9DB4CF; --line:#27405F;
+    --accent:#6FA8F0; --on-accent:#0B1B33; --title:#9DC3EE; --blob:#1A3453; --brush:#22416A;
+    --hot:#1B3558; --chip:#1D3354; --edge:#8FB4E0; --danger:#FF8A80; --shadow:rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.45;
+  padding:24px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+
+/* Portada */
+.hero{position:relative;overflow:hidden;background:var(--surface);border-radius:22px;box-shadow:0 10px 40px var(--shadow);
+  padding:56px 24px 52px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;isolation:isolate}
+.blob{position:absolute;background:var(--blob);border-radius:34px;z-index:-1}
+.b1{right:-3%;top:-8%;width:34%;height:62%}
+.b2{left:-5%;bottom:-12%;width:26%;height:58%;transform:rotate(-7deg)}
+.plus{position:absolute;left:12%;top:8%;width:130px;height:90px;z-index:-1}
+.eyebrow{font-family:var(--display);font-size:clamp(12px,1.9vw,17px);letter-spacing:.02em;color:var(--title);margin:0}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,7.4vw,84px);line-height:1.02;color:var(--title);margin:0;text-transform:uppercase;text-wrap:balance;max-width:11ch}
+.brush{font-family:var(--display);font-size:clamp(15px,2.2vw,20px);color:var(--title);background:var(--brush);padding:8px 52px;border-radius:6px;transform:rotate(-.6deg);margin:6px 0 2px}
+.team{list-style:disc;margin:0;padding:0 0 0 22px;text-align:left;color:var(--title);font-weight:600;font-size:clamp(16px,2.2vw,20px)}
+.team li{padding-block:1px}
+.foot{align-self:flex-end;font-family:var(--display);font-size:clamp(12px,1.8vw,16px);color:var(--title);margin:10px 8px 0 0}
+.lupa,.dona{position:absolute;z-index:-1}
+.lupa{right:4%;top:28%;width:min(17vw,200px)}
+.dona{left:3%;bottom:10%;width:min(14vw,150px)}
+
+/* Paneles */
+.panel{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:20px 20px 22px;box-shadow:0 8px 28px var(--shadow)}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(18px,2.6vw,24px);color:var(--title);margin:0 0 6px;text-transform:uppercase}
+.lead{margin:0 0 14px;color:var(--muted);max-width:75ch}
+.controls{display:grid;grid-template-columns:minmax(0,2.2fr) repeat(3,minmax(0,.7fr));gap:12px 16px;align-items:end}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+label{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+input,select{font:inherit;font-weight:600;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:8px 12px;min-width:0;width:100%}
+input[type=text]{font-family:var(--mono);font-weight:500;font-size:16px}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button{font:inherit;font-weight:700;border-radius:999px;border:2px solid var(--line);background:var(--chip);color:var(--ink);padding:8px 20px;cursor:pointer;transition:transform .12s,border-color .12s}
+button:hover:not(:disabled){border-color:var(--accent);transform:translateY(-1px)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+button:disabled{opacity:.45;cursor:default}
+.err{color:var(--danger);font-weight:600;min-height:24px;margin:8px 0 0;font-size:15px}
+.formula{font-family:var(--mono);font-size:14px;color:var(--muted);margin:0}
+.bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.pill{background:var(--chip);border-radius:999px;padding:3px 14px;font-size:14px;color:var(--muted);font-weight:600}
+.pill b{font-family:var(--mono);color:var(--ink)}
+.msg{min-height:3.4em;font-size:19px;margin:16px 0;padding:14px 18px;border-radius:16px;background:var(--hot);border:2px solid var(--line);font-weight:500}
+.msg b{font-family:var(--mono);color:var(--accent)}
+.arr{display:flex;gap:8px;flex-wrap:wrap}
+.cell{font-weight:700;font-size:22px;font-variant-numeric:tabular-nums;min-width:56px;height:48px;padding:0 12px;display:flex;align-items:center;justify-content:center;border-radius:12px;border:2px solid var(--line);background:var(--chip)}
+.cell.done{opacity:.4}
+.cell.hot{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.lbl{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.scroll{overflow-x:auto;padding-bottom:8px}
+.grid{display:grid;gap:10px;min-width:min-content}
+.col{border:2px solid var(--line);border-radius:18px;padding:12px 6px 14px;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:220px;background:var(--surface)}
+.col.hot{border-color:var(--accent);background:var(--hot);box-shadow:0 0 0 3px var(--accent)}
+.idx{font-family:var(--display);font-size:28px;color:var(--accent);line-height:1.1}
+.rng{font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:6px}
+.chip{font-weight:700;font-size:20px;font-variant-numeric:tabular-nums;min-width:54px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:12px;border:2px solid var(--edge);background:var(--chip)}
+.chip.new{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.arrow{color:var(--muted);font-size:14px;line-height:1}
+.nul{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.out{display:flex;gap:8px;flex-wrap:wrap;min-height:48px}
+.out .chip{height:48px;font-size:22px}
+.ghost{box-shadow:0 8px 22px rgba(30,70,130,.35)}
+.hint{font-size:14px;color:var(--muted);margin:12px 0 0}
+@media (max-width:820px){.lupa,.dona,.plus{display:none}.controls{grid-template-columns:1fr 1fr}.controls .wide{grid-column:1/-1}.hero{padding:40px 16px 40px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="blob b1"></div><div class="blob b2"></div>
+    <svg class="plus" viewBox="0 0 130 90" fill="none" stroke="#BDD5EC" stroke-width="5" stroke-linecap="round" aria-hidden="true">
+      <path d="M12 38h30M27 24v28"/><path d="M60 14h14M67 7v14"/><path d="M88 30h16M96 22v16"/><path d="M70 62h26M83 50v24"/><path d="M110 72h12M116 66v12"/>
+    </svg>
+    <svg class="dona" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+      <g transform="rotate(-90 60 60)" stroke-width="24">
+        <circle cx="60" cy="60" r="40" stroke="#6D9BD6" stroke-dasharray="100.5 251.3"/>
+        <circle cx="60" cy="60" r="40" stroke="#2F6FCB" stroke-dasharray="62.8 251.3" stroke-dashoffset="-100.5"/>
+        <circle cx="60" cy="60" r="40" stroke="#A9CBEF" stroke-dasharray="50.3 251.3" stroke-dashoffset="-163.3"/>
+        <circle cx="60" cy="60" r="40" stroke="#4F8FDB" stroke-dasharray="37.7 251.3" stroke-dashoffset="-213.6"/>
+      </g>
+    </svg>
+    <svg class="lupa" viewBox="0 0 160 160" aria-hidden="true">
+      <line x1="108" y1="108" x2="146" y2="146" stroke="#4B5563" stroke-width="18" stroke-linecap="round"/>
+      <circle cx="70" cy="70" r="52" fill="#FFFFFF" stroke="#A9B3BD" stroke-width="13"/>
+      <rect x="40" y="76" width="14" height="22" rx="2" fill="#6D9BD6"/>
+      <rect x="60" y="64" width="14" height="34" rx="2" fill="#6D9BD6"/>
+      <rect x="80" y="52" width="14" height="46" rx="2" fill="#6D9BD6"/>
+    </svg>
+
+    <p class="eyebrow">Ordenamiento por cálculo de direcciones</p>
+    <h1>Address Calculation Sort</h1>
+    <p class="brush">Equipo 5</p>
+    <ul class="team">
+      <li>Ana Lucia Osuna Gallegos 00545285</li>
+      <li>Racchel Canseco Colín 00500438</li>
+      <li>Alfredo Nader Zavala 00521769</li>
+    </ul>
+    <p class="foot">Estructuras de datos</p>
+  </header>
+
+  <section class="panel" aria-label="Datos">
+    <h2>Tus datos</h2>
+    <p class="lead">Escribe tus números o genera algunos al azar. Después avanza paso a paso y mira cómo cada valor se manda a su casilla, se inserta en orden en su lista ligada y al final se recorren las casillas.</p>
+    <div class="controls">
+      <div class="field wide">
+        <label for="valores">Números (separados por coma o espacio)</label>
+        <input id="valores" type="text" value="25, 57, 48, 37, 12, 92, 86, 33" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="casillas">Casillas (M)</label>
+        <input id="casillas" type="number" min="2" max="12" value="10">
+      </div>
+      <div class="field">
+        <label for="maximo">Valor máximo</label>
+        <input id="maximo" type="number" min="9" max="999" value="99">
+      </div>
+      <div class="field">
+        <label for="cantidad">Cantidad al azar</label>
+        <input id="cantidad" type="number" min="1" max="24" value="8">
+      </div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button id="aplicar" class="primary" type="button">Aplicar</button>
+      <button id="azar" type="button">Generar al azar</button>
+    </div>
+    <p class="err" id="err" role="alert"></p>
+    <p class="formula" id="formula"></p>
+  </section>
+
+  <section class="panel" aria-label="Simulación">
+    <h2>Simulación</h2>
+    <div class="bar">
+      <div class="row">
+        <button id="reiniciar" type="button">⏮ Reiniciar</button>
+        <button id="atras" type="button">◀ Atrás</button>
+        <button id="siguiente" type="button" class="primary">Siguiente ▶</button>
+        <button id="auto" type="button">▶▶ Auto</button>
+        <select id="vel" aria-label="Velocidad" style="width:auto">
+          <option value="2400">Lento</option>
+          <option value="1500" selected>Normal</option>
+          <option value="800">Rápido</option>
+        </select>
+      </div>
+      <div class="stats">
+        <span class="pill">Paso <b id="sPaso">0/0</b></span>
+        <span class="pill">Colisiones <b id="sCol">0</b></span>
+        <span class="pill">Comparaciones <b id="sCmp">0</b></span>
+      </div>
+    </div>
+
+    <div class="msg" id="msg" aria-live="polite"></div>
+
+    <p class="lbl">Arreglo original</p>
+    <div class="arr" id="arr"></div>
+
+    <p class="lbl" style="margin-top:20px">Casillas (cada una es una lista ligada ordenada)</p>
+    <div class="scroll"><div class="grid" id="grid"></div></div>
+
+    <p class="lbl" style="margin-top:20px">Arreglo ordenado</p>
+    <div class="out" id="out"></div>
+    <p class="hint">Atajos: flecha derecha avanza, flecha izquierda retrocede, espacio inicia o pausa.</p>
+  </section>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var cfg = { vals: [25,57,48,37,12,92,86,33], M: 10, MAX: 99 };
+  var steps = [], cur = 0, timer = null;
+
+  function f(x){ return Math.floor(x * cfg.M / (cfg.MAX + 1)); }
+  function lo(k){ return Math.ceil(k * (cfg.MAX + 1) / cfg.M); }
+  function hi(k){ return Math.ceil((k + 1) * (cfg.MAX + 1) / cfg.M) - 1; }
+
+  function build(){
+    steps = [];
+    var cols = []; for (var c = 0; c < cfg.M; c++) cols.push([]);
+    cfg.vals.forEach(function(v, i){
+      var k = f(v), list = cols[k], pos = 0;
+      while (pos < list.length && list[pos] < v) pos++;
+      var comps = list.length === 0 ? 0 : pos + (pos < list.length ? 1 : 0);
+      var kase = list.length === 0 ? 1 : (pos === 0 ? 2 : (pos === list.length ? 3 : 4));
+      steps.push({ t:'calc', i:i, v:v, k:k, size:list.length });
+      steps.push({ t:'ins', i:i, v:v, k:k, pos:pos, kase:kase, comps:comps, before:list.slice() });
+      list.splice(pos, 0, v);
+    });
+    for (var c2 = 0; c2 < cfg.M; c2++) steps.push({ t:'trav', c:c2 });
+    steps.push({ t:'done' });
+  }
+
+  function stateAt(s){
+    var cols = []; for (var c = 0; c < cfg.M; c++) cols.push([]);
+    var col = 0, cmp = 0, newK = -1, newPos = -1, hotK = -1, cell = -1, travTo = -1;
+    for (var n = 0; n < s; n++){
+      var st = steps[n];
+      if (st.t === 'ins'){ cols[st.k].splice(st.pos, 0, st.v); cmp += st.comps; if (st.kase !== 1) col++; }
+    }
+    var last = s > 0 ? steps[s-1] : null;
+    if (last){
+      if (last.t === 'calc'){ hotK = last.k; cell = last.i; }
+      else if (last.t === 'ins'){ hotK = last.k; newK = last.k; newPos = last.pos; cell = last.i + 0.5; }
+      else if (last.t === 'trav'){ hotK = last.c; travTo = last.c; cell = 1e9; }
+      else if (last.t === 'done'){ travTo = cfg.M - 1; cell = 1e9; }
+    }
+    return { cols:cols, col:col, cmp:cmp, newK:newK, newPos:newPos, hotK:hotK, cell:cell, travTo:travTo, last:last };
+  }
+
+  function message(S){
+    var l = S.last, M = cfg.M, MAX = cfg.MAX;
+    if (!l) return 'Listo para empezar. Pulsa <b>Siguiente</b> o <b>Auto</b>.';
+    if (l.t === 'calc'){
+      return 'Calcular la dirección de <b>' + l.v + '</b>: f(' + l.v + ') = ⌊' + l.v + '·' + M + ' / ' + (MAX+1) + '⌋ = <b>' + l.k + '</b>. Le toca la casilla ' + l.k + '. ' +
+        (l.size ? 'Ya tiene ' + l.size + ' elemento' + (l.size > 1 ? 's' : '') + ': habrá colisión.' : 'Está vacía.');
+    }
+    if (l.t === 'ins'){
+      var b = l.before, t;
+      if (l.kase === 1) t = 'La casilla ' + l.k + ' estaba vacía (caso 1): <b>' + l.v + '</b> es el primer nodo.';
+      else if (l.kase === 2) t = '<b>' + l.v + '</b> no es mayor que ' + b[0] + ' (caso 2): se inserta al inicio y <i>lista</i> apunta a ' + l.v + '.';
+      else if (l.kase === 3) t = '<b>' + l.v + '</b> es mayor que todos (caso 3): <i>p</i> llega a NULL y se inserta al final, detrás de <i>q</i> = ' + b[b.length-1] + '.';
+      else t = '<b>' + l.v + '</b> queda entre <i>q</i> = ' + b[l.pos-1] + ' y <i>p</i> = ' + b[l.pos] + ' (caso 4).';
+      return t + ' Comparaciones en este paso: ' + l.comps + '.';
+    }
+    if (l.t === 'trav'){
+      var lst = S.cols[l.c];
+      return 'Recorrido, casilla <b>' + l.c + '</b>: ' + (lst.length ? 'se copian ' + lst.join(', ') + ' al arreglo.' : 'está vacía, no se copia nada.');
+    }
+    return '¡Listo! El arreglo quedó ordenado con <b>' + S.cmp + '</b> comparaci' + (S.cmp === 1 ? 'ón' : 'ones') + ' y <b>' + S.col + '</b> colisi' + (S.col === 1 ? 'ón' : 'ones') + '.';
+  }
+
+  function render(animateIns){
+    var S = stateAt(cur);
+    document.querySelectorAll('.ghost').forEach(function(g){ g.remove(); });
+
+    $('msg').innerHTML = message(S);
+    $('sPaso').textContent = cur + '/' + steps.length;
+    $('sCol').textContent = S.col;
+    $('sCmp').textContent = S.cmp;
+
+    var a = '';
+    cfg.vals.forEach(function(v, i){
+      var cls = 'cell';
+      if (S.cell === i) cls += ' hot'; else if (i < S.cell) cls += ' done';
+      a += '<div class="' + cls + '" id="ac' + i + '">' + v + '</div>';
+    });
+    $('arr').innerHTML = a;
+
+    var g = $('grid');
+    g.style.gridTemplateColumns = 'repeat(' + cfg.M + ', minmax(84px, 1fr))';
+    var h = '';
+    for (var k = 0; k < cfg.M; k++){
+      var items = S.cols[k];
+      h += '<div class="col' + (S.hotK === k ? ' hot' : '') + '"><div class="idx">' + k + '</div><div class="rng">' + lo(k) + '–' + hi(k) + '</div>';
+      if (!items.length) h += '<div class="nul">NULL</div>';
+      else {
+        items.forEach(function(v, j){
+          var isNew = (S.newK === k && S.newPos === j);
+          h += '<div class="chip' + (isNew ? ' new' : '') + '"' + (isNew ? ' id="newchip"' : '') + '>' + v + '</div>';
+          h += '<div class="arrow">' + (j < items.length - 1 ? '↓' : '') + '</div>';
+        });
+        h += '<div class="nul">NULL</div>';
+      }
+      h += '</div>';
+    }
+    g.innerHTML = h;
+
+    var o = '';
+    if (S.travTo >= 0){
+      for (var c = 0; c <= S.travTo; c++) S.cols[c].forEach(function(v){ o += '<div class="chip">' + v + '</div>'; });
+    }
+    $('out').innerHTML = o;
+
+    $('atras').disabled = cur === 0;
+    $('reiniciar').disabled = cur === 0;
+    $('siguiente').disabled = cur >= steps.length;
+    if (cur >= steps.length) stop();
+
+    if (animateIns && S.last && S.last.t === 'ins') fly(S.last.i);
+  }
+
+  function fly(i){
+    var src = $('ac' + i), dst = $('newchip');
+    if (!src || !dst || !dst.animate) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var a = src.getBoundingClientRect(), b = dst.getBoundingClientRect();
+    var gh = document.createElement('div');
+    gh.className = 'chip new ghost';
+    gh.textContent = dst.textContent;
+    gh.style.cssText = 'position:fixed;margin:0;z-index:50;pointer-events:none;left:' + a.left + 'px;top:' + a.top + 'px;width:' + a.width + 'px;height:' + a.height + 'px';
+    document.body.appendChild(gh);
+    dst.style.visibility = 'hidden';
+    var an = gh.animate([
+      { transform:'translate(0,0)', width:a.width + 'px', height:a.height + 'px' },
+      { transform:'translate(' + (b.left - a.left) + 'px,' + (b.top - a.top) + 'px)', width:b.width + 'px', height:b.height + 'px' }
+    ], { duration:520, easing:'ease-in-out', fill:'forwards' });
+    an.onfinish = function(){ gh.remove(); dst.style.visibility = ''; };
+  }
+
+  function next(){ if (cur < steps.length){ cur++; render(true); } }
+  function prev(){ if (cur > 0){ cur--; render(false); } }
+  function stop(){ if (timer){ clearInterval(timer); timer = null; } $('auto').textContent = '▶▶ Auto'; }
+  function play(){
+    if (timer){ stop(); return; }
+    if (cur >= steps.length){ cur = 0; render(false); }
+    $('auto').textContent = '⏸ Pausa';
+    timer = setInterval(next, parseInt($('vel').value, 10));
+    next();
+  }
+
+  function parseVals(text){
+    var parts = text.split(/[\s,;]+/).filter(function(p){ return p !== ''; });
+    return parts.map(function(p){ return /^\d+$/.test(p) ? parseInt(p, 10) : NaN; });
+  }
+
+  function apply(valsText){
+    var M = parseInt($('casillas').value, 10), MAX = parseInt($('maximo').value, 10);
+    var err = '';
+    if (!(M >= 2 && M <= 12)) err = 'Las casillas deben ser un número entre 2 y 12.';
+    else if (!(MAX >= 9 && MAX <= 999)) err = 'El valor máximo debe estar entre 9 y 999.';
+    var vals = parseVals(valsText);
+    if (!err){
+      if (!vals.length) err = 'Escribe al menos un número.';
+      else if (vals.length > 24) err = 'Usa 24 números como máximo.';
+      else if (vals.some(function(v){ return isNaN(v); })) err = 'Solo se aceptan números enteros positivos separados por coma o espacio.';
+      else {
+        var bad = vals.filter(function(v){ return v > MAX; });
+        if (bad.length) err = 'Estos números pasan del valor máximo (' + MAX + '): ' + bad.join(', ') + '. Súbelo o cambia los números.';
+      }
+    }
+    $('err').textContent = err;
+    if (err) return;
+    stop();
+    cfg = { vals: vals, M: M, MAX: MAX };
+    $('valores').value = vals.join(', ');
+    $('formula').innerHTML = 'f(x) = ⌊x · ' + M + ' / ' + (MAX + 1) + '⌋ &nbsp;(casillas 0 a ' + (M - 1) + ', valores de 0 a ' + MAX + ')';
+    build(); cur = 0; render(false);
+  }
+
+  function random(){
+    var n = parseInt($('cantidad').value, 10), MAX = parseInt($('maximo').value, 10);
+    if (!(n >= 1 && n <= 24)){ $('err').textContent = 'La cantidad debe estar entre 1 y 24.'; return; }
+    if (!(MAX >= 9 && MAX <= 999)){ $('err').textContent = 'El valor máximo debe estar entre 9 y 999.'; return; }
+    var v = []; for (var i = 0; i < n; i++) v.push(Math.floor(Math.random() * (MAX + 1)));
+    apply(v.join(', '));
+  }
+
+  $('aplicar').addEventListener('click', function(){ apply($('valores').value); });
+  $('azar').addEventListener('click', random);
+  $('valores').addEventListener('keydown', function(e){ if (e.key === 'Enter') apply($('valores').value); });
+  ['casillas','maximo'].forEach(function(id){ $(id).addEventListener('change', function(){ apply($('valores').value); }); });
+  $('siguiente').addEventListener('click', function(){ stop(); next(); });
+  $('atras').addEventListener('click', function(){ stop(); prev(); });
+  $('reiniciar').addEventListener('click', function(){ stop(); cur = 0; render(false); });
+  $('auto').addEventListener('click', play);
+  $('vel').addEventListener('change', function(){ if (timer){ stop(); play(); } });
+  document.addEventListener('keydown', function(e){
+    var tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'select' || tag === 'button') return;
+    if (e.key === 'ArrowRight'){ stop(); next(); }
+    else if (e.key === 'ArrowLeft'){ stop(); prev(); }
+    else if (e.key === ' '){ e.preventDefault(); play(); }
+  });
+
+  apply($('valores').value);
+})();
+</script>
+</body>
+</html>
